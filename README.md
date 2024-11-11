@@ -1,6 +1,15 @@
 # SKT-AI-Fellowship-6th
 This repository is part of the 6th SKT AI Fellowship project on Virtual Try-on. It focuses on enhancing fine-grained garment detail preservation through the use of Edge Filtering and Tunnel Extraction techniques, offering significant improvements in maintaining clothing intricacies during virtual try-on.
 
+## Requirements
+```bash
+git clone https://github.com/yisol/IDM-VTON.git
+cd IDM-VTON
+
+conda env create -f environment.yaml
+conda activate idm
+```
+
 ## Train
 
 #### Edge Filtering
