@@ -10,6 +10,30 @@ conda env create -f environment.yaml
 conda activate idm
 ```
 
+## Data preparation
+#### VITON-HD
+You can download VITON-HD dataset from VITON-HD.
+
+After download VITON-HD dataset, move vitonhd_test_tagged.json into the test folder, and move vitonhd_train_tagged.json into the train folder.
+
+Structure of the Dataset directory should be as follows.
+
+```
+train
+|-- image
+|-- image-densepose
+|-- agnostic-mask
+|-- cloth
+|-- vitonhd_train_tagged.json
+
+test
+|-- image
+|-- image-densepose
+|-- agnostic-mask
+|-- cloth
+|-- vitonhd_test_tagged.json
+```
+
 ## Train
 
 #### Edge Filtering
@@ -24,6 +48,12 @@ CUDA_VISIBLE_DEVICES=3,4,5,6 accelerate launch train_edge_filtering.py \
 --data_dir=/your/path/to/VITON-HD \
 --pretrained_model_name_or_path=idm
 ```
+or, you can simply run with the script file.
+```bash
+sh train_edge_filtering.sh
+```
+
+  
 
 #### Tunnel Extraction
 ```bash
@@ -37,7 +67,10 @@ CUDA_VISIBLE_DEVICES=3,4,5,6 accelerate launch train_tunnel_extraction.py \
     --data_dir=/your/path/to/VITON-HD \
     --pretrained_model_name_or_path=idm
 ```
-
+or, you can simply run with the script file.
+```bash
+sh train_tunnel_extraction.sh
+```
 
 #### Parameter Descriptions
 - **checkpointing_epoch**: The epoch interval at which checkpoints are saved.
@@ -57,6 +90,10 @@ python inference.py \
 --device=0 \
 --input_dir=/path/to/Input \
 --output_dir=/path/to/Output
+```
+or, you can simply run with the script file.
+```bash
+sh inference.sh
 ```
 
 #### Parameter Descriptions
