@@ -1,1 +1,0 @@
-python inference.py --base_path idm_filter_tunnel --device 0 --input_dir Input --output_dir Output

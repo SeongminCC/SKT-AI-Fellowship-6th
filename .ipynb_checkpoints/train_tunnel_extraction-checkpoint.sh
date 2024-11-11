@@ -1,1 +1,0 @@
-CUDA_VISIBLE_DEVICES=3,4,5,6 accelerate launch train_tunnel_extraction.py --gradient_checkpointing --use_8bit_adam --output_dir=checkpoints/result_tunnel --train_batch_size=16 --data_dir=/home/vton/data/VITON-HD/ --pretrained_model_name_or_path=idm_filter

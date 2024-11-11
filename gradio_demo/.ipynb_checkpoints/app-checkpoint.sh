@@ -1,1 +1,0 @@
-python app.py --base_path ../idm_filter_tunnel --device 0
