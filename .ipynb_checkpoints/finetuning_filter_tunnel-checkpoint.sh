@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=3,4,5,6 accelerate launch finetuning_filter_tunnel.py --gradient_checkpointing --use_8bit_adam --output_dir=result_filtering/tunnel --train_batch_size=16 --data_dir=/home/vton/data/VITON-HD/ --pretrained_model_name_or_path=result_filtering/VITON_HD/checkpoint-100
