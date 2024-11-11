@@ -3,7 +3,7 @@ This repository is part of the 6th SKT AI Fellowship project on Virtual Try-on. 
 
 ## Requirements
 ```bash
-git clone https://github.com/yisol/IDM-VTON.git
+git clone https://github.com/SeongminCC/SKT-AI-Fellowship-6th.git
 cd IDM-VTON
 
 conda env create -f environment.yaml
