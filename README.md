@@ -65,7 +65,7 @@ CUDA_VISIBLE_DEVICES=3,4,5,6 accelerate launch train_tunnel_extraction.py \
     --output_dir=train_checkpoints/result_tunnel \
     --train_batch_size=3 \
     --data_dir=/your/path/to/VITON-HD \
-    --pretrained_model_name_or_path=idm
+    --pretrained_model_name_or_path=idm_filter
 ```
 or, you can simply run with the script file.
 ```bash
