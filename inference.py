@@ -50,7 +50,7 @@ def parse_args():
 
 
 
-
+# PIL 이미지를 binary mask로 변환
 def pil_to_binary_mask(pil_image, threshold=0):
     np_image = np.array(pil_image)
     grayscale_image = Image.fromarray(np_image).convert("L")
@@ -66,10 +66,12 @@ def pil_to_binary_mask(pil_image, threshold=0):
 
 
 ### filtering
+#### 이미지에 엣지 필터 적용
 def edge_filter(img, filter_name):
     # PIL 이미지 객체를 numpy 배열로 변환
     img = np.array(img.convert('L'))  # 그레이스케일로 변환
 
+    # sobel filter 적용
     if filter_name == "sobel":
         sobel_x = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=5)
         sobel_y = cv2.Sobel(img, cv2.CV_64F, 0, 1, ksize=5)
@@ -77,21 +79,25 @@ def edge_filter(img, filter_name):
         sobel_normalized = cv2.normalize(sobel, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         return Image.fromarray(sobel_normalized)
 
+    # canny filter 적용
     if filter_name == "canny":
         edges = cv2.Canny((img * 255).astype(np.uint8), 100, 200)
         return Image.fromarray(edges)
 
+    # laplacian filter 적용
     if filter_name == "laplacian":
         laplacian = cv2.Laplacian(img, cv2.CV_64F)
         laplacian_normalized = cv2.normalize(laplacian, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         return Image.fromarray(laplacian_normalized)
-
+    
+    # gabor filter 적용
     if filter_name == "gabor":
         gabor_kernel = cv2.getGaborKernel((21, 21), 5, np.pi/4, 10, 0.5, 0, ktype=cv2.CV_32F)
         filtered_img = cv2.filter2D((img * 255).astype(np.uint8), cv2.CV_8UC3, gabor_kernel)
         return Image.fromarray(filtered_img)
 
-    
+
+# main method for VTON
 def start_tryon(human_img, garm_img, garm_path, garment_des, is_checked, is_checked_crop, denoise_steps, seed, base_path):
     
     openpose_model.preprocessor.body_estimation.model.to(device)
@@ -103,7 +109,8 @@ def start_tryon(human_img, garm_img, garm_path, garment_des, is_checked, is_chec
     
     human_img_orig = human_img["background"].convert("RGB")
 
-    if is_checked_crop:
+    # image crop setting
+    if is_checked_crop: 
         width, height = human_img_orig.size   # 768, 1024
         target_width = int(min(width, height * (3 / 4)))
         target_height = int(min(height, width * (4 / 3)))
@@ -118,22 +125,27 @@ def start_tryon(human_img, garm_img, garm_path, garment_des, is_checked, is_chec
         human_img = human_img_orig.resize((768, 1024))
 
     if is_checked:
+        # OpenPose & human parsing model을 통해 keypoints & mask 추출
         keypoints = openpose_model(human_img.resize((384, 512)))
         model_parse, _ = parsing_model(human_img.resize((384, 512)))
         mask, mask_gray = get_mask_location('hd', "upper_body", model_parse, keypoints)
+        # get_mask_location
+            ## "upper_body" : 상의 영역 agnostic mask 추출
+            ## "lower_body" : 하의 영역 agnostic mask 추출
         mask = mask.resize((768, 1024))
     else:
         mask = pil_to_binary_mask(human_img["layers"][0].convert("RGB").resize((768, 1024)))
     mask_gray = (1 - transforms.ToTensor()(mask)) * tensor_transform(human_img)
     mask_gray = to_pil_image((mask_gray + 1.0) / 2.0)
 
+    # DensePose 모델을 통해 Pose 정보 추출
     human_img_arg = _apply_exif_orientation(human_img.resize((384, 512)))
     human_img_arg = convert_PIL_to_numpy(human_img_arg, format="BGR")
-    
     pose_img = densepose_model_hd.execute(human_img_arg)
     pose_img = np.array(pose_img)[:, :, ::-1]
     pose_img = Image.fromarray(pose_img).resize((768, 1024))
 
+    # 최종 Inference 수행행
     with torch.no_grad():
         prompt = "model is wearing " + garment_des
         negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"
@@ -180,7 +192,8 @@ def start_tryon(human_img, garm_img, garm_path, garment_des, is_checked, is_chec
             else:
                 cloth_filtering = True
                 cloth_logo_masking = False
-            
+
+            # 최종 이미지 생성
             generator = torch.Generator(device).manual_seed(args.seed) if args.seed is not None else None
             images = pipe(
                 prompt_embeds=prompt_embeds.to(device, torch.float16),
