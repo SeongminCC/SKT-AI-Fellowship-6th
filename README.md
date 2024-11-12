@@ -12,7 +12,7 @@ conda activate idm
 
 ## Data preparation
 #### VITON-HD
-You can download VITON-HD dataset from VITON-HD.
+You can download VITON-HD dataset from [VITON-HD](https://github.com/shadow2496/VITON-HD).
 
 After download VITON-HD dataset, move vitonhd_test_tagged.json into the test folder, and move vitonhd_train_tagged.json into the train folder.
 
