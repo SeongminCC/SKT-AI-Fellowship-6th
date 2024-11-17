@@ -39,6 +39,8 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
 
 
+
+# edge filtering 적용을 위한 Binary garment image 생성성
 def edge_filter(img_path, filter_name):
     img = io.imread(img_path, as_gray=True)
 
@@ -64,7 +66,7 @@ def edge_filter(img_path, filter_name):
         return Image.fromarray(filtered_img)
 
     
-    
+# 커스텀 데이터셋 클래스 정의의 
 class VitonHDDataset(data.Dataset):
     def __init__(
         self,
@@ -158,6 +160,7 @@ class VitonHDDataset(data.Dataset):
         self.flip_transform = transforms.RandomHorizontalFlip(p=1)
         self.clip_processor = CLIPImageProcessor()
         self.pipeline = PoseProcessingPipeline()
+        
     def __getitem__(self, index):
         c_name = self.c_names[index]
         im_name = self.im_names[index]
@@ -368,6 +371,7 @@ def main():
         if args.output_dir is not None:
             os.makedirs(args.output_dir, exist_ok=True)
 
+    # pre-trained 모델 로드드
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     vae = AutoencoderKL.from_pretrained(
         args.pretrained_model_name_or_path,
@@ -430,7 +434,7 @@ def main():
     UNet_Encoder.requires_grad_(False)
     text_encoder_one.requires_grad_(False)
     text_encoder_two.requires_grad_(False)
-    unet.requires_grad_(True)
+    unet.requires_grad_(True) # TryonNet만 학습습
 
     if args.enable_xformers_memory_efficient_attention:
         if is_xformers_available():
