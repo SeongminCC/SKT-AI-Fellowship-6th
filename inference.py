@@ -85,11 +85,13 @@ if __name__ == "__main__":
     
     device = f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu'
 
+    # Densepose 모델 초기화
     densepose_model_hd = DensePose4Gradio(
         cfg='preprocess/detectron2/projects/DensePose/configs/densepose_rcnn_R_50_FPN_s1x.yaml',
         model='https://dl.fbaipublicfiles.com/densepose/densepose_rcnn_R_50_FPN_s1x/165712039/model_final_162be9.pkl',
     )
-    
+
+    # Pretrained 모델 로드드
     vae = AutoencoderKL.from_pretrained(args.base_path,
                                     subfolder="vae",
                                     torch_dtype=torch.float16,
@@ -125,53 +127,7 @@ if __name__ == "__main__":
         args.base_path,
         subfolder="unet",
         torch_dtype=torch.float16,
-    )
-    UNet_Encoder = UNet2DConditionModel_ref.from_pretrained(
-        args.base_path,
-        subfolder="unet_encoder",
-        torch_dtype=torch.float16,
-    )
-    noise_scheduler = DDPMScheduler.from_pretrained(args.base_path, subfolder="scheduler")
-
-    vae.requires_grad_(False)
-    unet.requires_grad_(False)
-    UNet_Encoder.requires_grad_(False)
-    image_encoder.requires_grad_(False)
-    text_encoder_one.requires_grad_(False)
-    text_encoder_two.requires_grad_(False)
-
-    parsing_model = Parsing(0)
-    openpose_model = OpenPose(0)
-
-    tensor_transform = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Normalize([0.5], [0.5]),
-                ]
-        )
-
-    pipe = TryonPipeline.from_pretrained(
-            args.base_path,
-            unet=unet,
-            vae=vae,
-            feature_extractor= CLIPImageProcessor(),
-            text_encoder = text_encoder_one,
-            text_encoder_2 = text_encoder_two,
-            tokenizer = tokenizer_one,
-            tokenizer_2 = tokenizer_two,
-            scheduler = noise_scheduler,
-            image_encoder=image_encoder,
-            torch_dtype=torch.float16,
-    )
-    pipe.unet_encoder = UNet_Encoder
-    
-    file_list = sorted(glob.glob(f'{args.input_dir}/*/*'))
-    garm_list = [file for file in file_list if 'garment' in file]
-    human_list = [file for file in file_list if 'image' in file]
-    with open('Input/garments.json', 'r') as json_file:
-        garm_prom_dict = json.load(json_file)
-        
-    # desired_pairs = [(0, 0), (0, 3), (1, 1), (1, 4), (2, 2)]
+ 장
     for i, human_img_path in enumerate(human_list):
         for j, garm_img_path in enumerate(garm_list): 
             
