@@ -36,6 +36,7 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
 
 
+# 지정한 필터를 통해 garment image로부터 edge 정보를 담은 binary image 생성
 def edge_filter(img_path, filter_name):
     img = io.imread(img_path, as_gray=True)
 
@@ -61,7 +62,8 @@ def edge_filter(img_path, filter_name):
         return Image.fromarray(filtered_img)
 
     
-    
+
+# 커스텀 데이터셋 클래스 정의의
 class VitonHDDataset(data.Dataset):
     def __init__(
         self,
@@ -153,6 +155,7 @@ class VitonHDDataset(data.Dataset):
         self.dataroot_names = dataroot_names
         self.flip_transform = transforms.RandomHorizontalFlip(p=1)
         self.clip_processor = CLIPImageProcessor()
+        
     def __getitem__(self, index):
         c_name = self.c_names[index]
         im_name = self.im_names[index]
@@ -357,6 +360,7 @@ def main():
         if args.output_dir is not None:
             os.makedirs(args.output_dir, exist_ok=True)
 
+    # pre-trained model 정의의
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     vae = AutoencoderKL.from_pretrained(
         args.pretrained_model_name_or_path,
@@ -405,9 +409,10 @@ def main():
     image_proj_model.to(accelerator.device, dtype=torch.float32)
     
     image_proj_model.requires_grad_(True)
-    
+
+    # 인코딩된 garment image를 받는 new conv층 정의
     conv_new = torch.nn.Conv2d(
-        in_channels=4+1,
+        in_channels=4+1, # channel of encoding garment image : 4 / binary image : 1
         out_channels=UNet_Encoder.conv_in.out_channels,
         kernel_size=3,
         padding=1,
@@ -431,7 +436,7 @@ def main():
 
     vae.requires_grad_(False)
     image_encoder.requires_grad_(False)
-    UNet_Encoder.requires_grad_(True)
+    UNet_Encoder.requires_grad_(True) # image encoder만 학습습
     text_encoder_one.requires_grad_(False)
     text_encoder_two.requires_grad_(False)
     unet.requires_grad_(False)
